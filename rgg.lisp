@@ -30,7 +30,6 @@
 (defvar *s* 0.01)                      ; step length (speed)
 (defvar *m* 8)                         ; expected steps between change
 (defvar *vertices* '())
-(defvar *run* t)
 
 (defun rand-rect ()
   (make-instance 'rect
@@ -79,6 +78,11 @@
 
 (defun gnuplot (&key (stream t))
   "Plot a series of polar or rectangular coordinates using gnuplot."
+  (let ((n (length *vertices*))
+        (e (exp 1.0d0)))
+    (format stream "set title 'n=~d s=~f m=~f r=~f u=~5,4f'~%"
+            n *s* *m* *r*
+            (* n (expt e (* (- 0 Pi) (expt *r* 2) n)))))
   (format stream "~&unset arrow~%")
   ;; edges
   (dolist (edge (edges))
@@ -97,7 +101,7 @@
      (with-open-file (out path :direction :output :if-exists :append)
        (format out "set xrange [~f:~f]~%" (- 0 *field-radius*) *field-radius*)
        (format out "set yrange [~f:~f]~%" (- 0 *field-radius*) *field-radius*)
-       (loop while *run* do (mapc #'move *vertices*) (gnuplot :stream out))))
+       (loop while t do (mapc #'move *vertices*) (gnuplot :stream out))))
    :name "rgg"))
 
 ;; To start gnuplot running
