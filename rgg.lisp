@@ -31,6 +31,8 @@
 (defvar *m* 8)                         ; expected steps between change
 (defvar *vertices* '())
 
+(defvar *connected-for* 0)
+
 (defun rand-rect ()
   (make-instance 'rect
     :x (- (random (* 2 *field-radius*)) *field-radius*)
@@ -76,13 +78,39 @@
                                       (cons (cdr pair) (car pair)) pair))
                         (cross *vertices* *vertices*))))))
 
+;;; graph stuff
+(defun neighbors (edges vert)
+  "Return the neighbors of a vertex"
+  (remove-duplicates
+   (apply #'append
+          (mapcar (lambda (pair) (list (car pair) (cdr pair)))
+                  (remove-if (lambda (edge) (not (or (eq vert (car edge))
+                                                (eq vert (cdr edge)))))
+                     edges)))))
+
+(defun connected-to- (edges already new)
+  (if (null new)
+      already
+      (let* ((reachable (remove-duplicates
+                         (mapcan (lambda (v) (neighbors edges v)) new)))
+             (new (set-difference reachable already)))
+        (connected-to- edges (append new reachable) new))))
+
+(defun connected-to (edges vert)
+  (connected-to- edges (list vert) (list vert)))
+
+(defun full-cnn ()
+  (= (length (connected-to (edges) (first *vertices*)))
+     (length *vertices*)))
+
 (defun gnuplot (&key (stream t))
   "Plot a series of polar or rectangular coordinates using gnuplot."
   (let ((n (length *vertices*))
         (e (exp 1.0d0)))
-    (format stream "set title 'n=~d s=~f m=~f r=~f u=~5,4f'~%"
+    (format stream "set title 'n=~d s=~f m=~f r=~f u=~5,4f C=~d'~%"
             n *s* *m* *r*
-            (* n (expt e (* (- 0 Pi) (expt *r* 2) n)))))
+            (* n (expt e (* (- 0 Pi) (expt *r* 2) n)))
+            *connected-for*))
   (format stream "~&unset arrow~%")
   ;; edges
   (dolist (edge (edges))
@@ -101,7 +129,16 @@
      (with-open-file (out path :direction :output :if-exists :append)
        (format out "set xrange [~f:~f]~%" (- 0 *field-radius*) *field-radius*)
        (format out "set yrange [~f:~f]~%" (- 0 *field-radius*) *field-radius*)
-       (loop while t do (mapc #'move *vertices*) (gnuplot :stream out))))
+       (loop while t
+          do (mapc #'move *vertices*)
+            (if (full-cnn)
+                (if (>= *connected-for* 0)
+                    (incf *connected-for*)
+                    (setf *connected-for* 0))
+                (if (< *connected-for* 0)
+                    (decf *connected-for*)
+                    (setf *connected-for* 0)))
+            (gnuplot :stream out))))
    :name "rgg"))
 
 ;; To start gnuplot running
