@@ -94,7 +94,7 @@
       (let* ((reachable (remove-duplicates
                          (mapcan (lambda (v) (neighbors edges v)) new)))
              (new (set-difference reachable already)))
-        (connected-to- edges (append new reachable) new))))
+        (connected-to- edges (append new already) new))))
 
 (defun connected-to (edges vert)
   (connected-to- edges (list vert) (list vert)))
@@ -135,7 +135,7 @@
                 (if (>= *connected-for* 0)
                     (incf *connected-for*)
                     (setf *connected-for* 0))
-                (if (< *connected-for* 0)
+                (if (<= *connected-for* 0)
                     (decf *connected-for*)
                     (setf *connected-for* 0)))
             (gnuplot :stream out))))
@@ -145,6 +145,8 @@
 ;;  1. mkfifo /tmp/feedgnuplot
 ;;  2. gnuplot < /tmp/feedgnuplot
 ;;  3. (setq *gnuplot* (run-to #P"/tmp/feedgnu"))
+;;
+;; while running you can continue to setf variables at the REPL
 ;;
 ;; To stop gnuplot running
 ;;  1. (terminate-thread *gnuplot*)
