@@ -144,7 +144,8 @@
 ;; To start gnuplot running
 ;;  1. mkfifo /tmp/feedgnuplot
 ;;  2. gnuplot < /tmp/feedgnuplot
-;;  3. (setq *gnuplot* (run-to #P"/tmp/feedgnu"))
+;;  3. (populate 20)
+;;  4. (setq *gnuplot* (run-to #P"/tmp/feedgnuplot"))
 ;;
 ;; while running you can continue to setf variables at the REPL
 ;;
