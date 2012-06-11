@@ -1,0 +1,63 @@
+# -*- org-export-html-postamble:nil -*-
+#+Title: Random Geometric Graphs
+#+Author: Eric Schulte
+#+Style: <style type="text/css">pre{background:#232323; color:#E6E1DC;}h1,h2{border-bottom-style: solid; border-bottom-color: gray;}</style>
+
+Visualization of [[http://en.wikipedia.org/wiki/Random_geometric_graph][random geometric graphs]] using Common Lisp.
+
+The implementation is split into two parts.
+1. [[https://github.com/eschulte/rgg-cl/blob/master/polar.lisp][polar.lisp]] uses the Common Lisp Object System (CLOS) to define a
+   class of polar coordinates with some basic operations like
+   translation between polar and rectangular coordinate systems,
+   adding coordinates etc...
+2. [[https://github.com/eschulte/rgg-cl/blob/master/rgg.lisp][rgg.lisp]] implements random geometric graphs of verticies moving
+   inside of a field.  Using the =run-to= method the simulation may be
+   visualized using a =gnuplot= front-end.  Thanks to the lisp REPL it
+   is possible to update simulation parameters during a running
+   simulation.  The important parameters are listed below.
+   #+begin_src lisp
+     (defvar *field-radius* 0.5)            ; size of the field
+     (defvar *r* 0.1)                       ; connectivity radius
+     (defvar *s* 0.01)                      ; step length (speed)
+     (defvar *m* 8)                         ; expected steps between change
+     (defvar *vertices* '())                ; holds the vertices
+   #+end_src
+
+The following steps may be used to run this locally.
+1. Make a fifo through which CL can dump graph directives to gnuplot
+   #+begin_src sh
+     mkfifo /tmp/feedgnuplot
+     gnuplot < /tmp/feedgnuplot
+   #+end_src
+2. Make an initial population of vertices
+   #+begin_src lisp
+     (populate 20)
+   #+end_src
+3. Start a simulation running in another thread
+   #+begin_src lisp
+     (setq *gnuplot* (run-to #P"/tmp/feedgnuplot"))
+   #+end_src
+4. Change some simulation parameters from the REPL and see their
+   effects in the =gnuplot= window.
+   #+begin_src lisp
+     ;; increase edge radius
+     (setf *r* 0.2)
+     ;; increase vertex speed
+     (setf *s* 0.05)
+     ;; increase the number of vertices to 80
+     (populate 80)
+   #+end_src
+5. When finished terminate the simulation thread
+   #+begin_src lisp
+     (terminate-thread *gnuplot*)
+   #+end_src
+
+Here is a video of such a run.
+#+begin_html
+  <p>
+    <video width="640" height="480" controls preload>
+      <source src="rgg.avi" type="video/avi" />
+      <source src="rgg.ogg" type="video/ogg" />
+    </video>
+  </p>
+#+end_html

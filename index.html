@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Random Geometric Graphs</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="title" content="Random Geometric Graphs"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2012-06-11T16:57-0600"/>
+<meta name="author" content="Eric Schulte"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+ border: 1pt solid #AEBDCC;
+    padding: 5pt;
+ font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<style type="text/css">pre{background:#232323; color:#E6E1DC;}h1,h2{border-bottom-style: solid; border-bottom-color: gray;}</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">Random Geometric Graphs</h1>
+
+<p>Visualization of <a href="http://en.wikipedia.org/wiki/Random_geometric_graph">random geometric graphs</a> using Common Lisp.
+</p>
+<p>
+The implementation is split into two parts.
+</p><ol>
+<li><a href="https://github.com/eschulte/rgg-cl/blob/master/polar.lisp">polar.lisp</a> uses the Common Lisp Object System (CLOS) to define a
+   class of polar coordinates with some basic operations like
+   translation between polar and rectangular coordinate systems,
+   adding coordinates etc&hellip;
+</li>
+<li><a href="https://github.com/eschulte/rgg-cl/blob/master/rgg.lisp">rgg.lisp</a> implements random geometric graphs of verticies moving
+   inside of a field.  Using the <code>run-to</code> method the simulation may be
+   visualized using a <code>gnuplot</code> front-end.  Thanks to the lisp REPL it
+   is possible to update simulation parameters during a running
+   simulation.  The important parameters are listed below.
+
+
+
+<pre class="src src-lisp"><span style="color: #7f7f7f;">(</span><span style="color: #b4fa70;">defvar</span> <span style="color: #fcaf3e;">*field-radius*</span> 0.5<span style="color: #7f7f7f;">)</span>            <span style="color: #73d216;">; </span><span style="color: #73d216;">size of the field</span>
+<span style="color: #7f7f7f;">(</span><span style="color: #b4fa70;">defvar</span> <span style="color: #fcaf3e;">*r*</span> 0.1<span style="color: #7f7f7f;">)</span>                       <span style="color: #73d216;">; </span><span style="color: #73d216;">connectivity radius</span>
+<span style="color: #7f7f7f;">(</span><span style="color: #b4fa70;">defvar</span> <span style="color: #fcaf3e;">*s*</span> 0.01<span style="color: #7f7f7f;">)</span>                      <span style="color: #73d216;">; </span><span style="color: #73d216;">step length (speed)</span>
+<span style="color: #7f7f7f;">(</span><span style="color: #b4fa70;">defvar</span> <span style="color: #fcaf3e;">*m*</span> 8<span style="color: #7f7f7f;">)</span>                         <span style="color: #73d216;">; </span><span style="color: #73d216;">expected steps between change</span>
+<span style="color: #7f7f7f;">(</span><span style="color: #b4fa70;">defvar</span> <span style="color: #fcaf3e;">*vertices*</span> '<span style="color: #7f7f7f;">())</span>                <span style="color: #73d216;">; </span><span style="color: #73d216;">holds the vertices</span>
+</pre>
+
+</li>
+</ol>
+
+
+<p>
+The following steps may be used to run this locally.
+</p><ol>
+<li>Make a fifo through which CL can dump graph directives to gnuplot
+
+
+
+<pre class="src src-sh">mkfifo /tmp/feedgnuplot
+gnuplot &lt; /tmp/feedgnuplot
+</pre>
+
+</li>
+<li>Make an initial population of vertices
+
+
+
+<pre class="src src-lisp"><span style="color: #7f7f7f;">(</span>populate 20<span style="color: #7f7f7f;">)</span>
+</pre>
+
+</li>
+<li>Start a simulation running in another thread
+
+
+
+<pre class="src src-lisp"><span style="color: #7f7f7f;">(</span>setq *gnuplot* <span style="color: #7f7f7f;">(</span>run-to #P<span style="color: #e9b96e;">"/tmp/feedgnuplot"</span><span style="color: #7f7f7f;">))</span>
+</pre>
+
+</li>
+<li>Change some simulation parameters from the REPL and see their
+   effects in the <code>gnuplot</code> window.
+
+
+
+<pre class="src src-lisp"><span style="color: #73d216;">;; </span><span style="color: #73d216;">increase edge radius</span>
+<span style="color: #7f7f7f;">(</span>setf *r* 0.2<span style="color: #7f7f7f;">)</span>
+<span style="color: #73d216;">;; </span><span style="color: #73d216;">increase vertex speed</span>
+<span style="color: #7f7f7f;">(</span>setf *s* 0.05<span style="color: #7f7f7f;">)</span>
+<span style="color: #73d216;">;; </span><span style="color: #73d216;">increase the number of vertices to 80</span>
+<span style="color: #7f7f7f;">(</span>populate 80<span style="color: #7f7f7f;">)</span>
+</pre>
+
+</li>
+<li>When finished terminate the simulation thread
+
+
+
+<pre class="src src-lisp"><span style="color: #7f7f7f;">(</span>terminate-thread *gnuplot*<span style="color: #7f7f7f;">)</span>
+</pre>
+
+</li>
+</ol>
+
+
+<p>
+Here is a video of such a run.
+  <p>
+    <video width="640" height="480" controls preload>
+      <source src="rgg.avi" type="video/avi" />
+      <source src="rgg.ogg" type="video/ogg" />
+    </video>
+  </p>
+</p></div>
+
+</body>
+</html>
