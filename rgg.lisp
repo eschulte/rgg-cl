@@ -103,10 +103,16 @@
   (= (length (connected-to (edges) (first *vertices*)))
      (length *vertices*)))
 
+(defvar *gnuplot-counter* 0)
+
 (defun gnuplot (&key (stream t))
   "Plot a series of polar or rectangular coordinates using gnuplot."
   (let ((n (length *vertices*))
         (e (exp 1.0d0)))
+    ;; ;; used to create a video
+    ;; (format stream "set term png~%")
+    ;; (format stream "set output 'plots/~a.png'~%" *gnuplot-counter*)
+    (incf *gnuplot-counter*)
     (format stream "set title 'n=~d s=~f m=~f r=~f u=~5,4f C=~d'~%"
             n *s* *m* *r*
             (* n (expt e (* (- 0 Pi) (expt *r* 2) n)))
